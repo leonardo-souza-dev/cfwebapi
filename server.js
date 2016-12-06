@@ -90,7 +90,7 @@ var Post = sequelize.define('post', {
 );
 ;
 
-//https://codeforgeek.com/2014/11/file-uploads-using-node-js/
+//https://codeforgeek.com/2014/11/file-uploads-using-node-js//
 var upload = multer({ storage : storage }).single('foto_de_catioro');
 app.post('/api/uploadfoto',function(req,res){
     upload(req,res,function(err) {
