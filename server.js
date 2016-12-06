@@ -110,6 +110,10 @@ app.post('/api/salvarpost', function (req, res) {
     console.log('**********');
 });
 
+app.get('/fetch', function (req, res) {
+    res.status(200).send('ok');
+});
+
 // listen (start app with node server.js) ======================================
 app.listen(app.get('port'), function() {
 
