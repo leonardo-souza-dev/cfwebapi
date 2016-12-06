@@ -14,7 +14,8 @@
     "method-override": "^2.3.6",
     "morgan": "^1.7.0",
     "mysql": "^2.11.1",
-    "sequelize": "^3.24.4"
+    "sequelize": "^3.24.4",
+    "multer": "1.1.0"
   },
   "author": "",
   "license": "ISC"

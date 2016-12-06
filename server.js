@@ -1,6 +1,7 @@
 // server.js
 // set up ========================
 var express = require('express');
+var multer  =   require('multer');
 var app = express();
 var mysql = require('mysql');
 var morgan = require('morgan');
@@ -9,18 +10,29 @@ var methodOverride = require('method-override');
 var async = require('async');
 var Sequelize = require('sequelize');
 var Enumerable = require('linq');
+const fs = require('fs');
 
 
 // configuration =================
-app.set('port', (process.env.PORT || 8082));
+app.set('port', (process.env.PORT || 8084));
 app.use(express.static(__dirname + '/public'));
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ 'extended': 'true' }));
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(methodOverride());
+app.use(bodyParser({uploadDir:'/path/to/temporary/directory/to/store/uploaded/files'}));
 var connStr = 'mysql://ch4pj48srg20sqnt:mi0nrgdxn1qpv4w9@tkck4yllxdrw0bhi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/ryvfnuo9gyupf0g7';
 var connection = mysql.createConnection(connStr);
+var storage = multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, './uploads');
+  },
+  filename: function (req, file, callback) {
+    console.log(file);
+    callback(null, file.fieldname + '-' + Date.now() + '.' + file.originalname.split('.')[file.originalname.split('.').length-1]);
+  }
+});
 
 
 //ORM
@@ -76,26 +88,27 @@ var Post = sequelize.define('post', {
         }
     },{ tableName: 'Post' }
 );
+;
 
+//https://codeforgeek.com/2014/11/file-uploads-using-node-js/
+var upload = multer({ storage : storage }).single('foto_de_catioro');
+app.post('/api/uploadfoto',function(req,res){
+    upload(req,res,function(err) {
+        if(err) {
+            console.log(err);
+            return res.end("Error uploading file.");
+        }
+        res.end("File is uploaded");
+    });
+});
 
 // routes ==================================================
-app.post('/api/bbb', function (req, res) {
+app.post('/api/salvarpost', function (req, res) {
 
-    
+    console.log('----------');
+    console.log(req.body);
+    console.log('**********');
 });
-
-app.get('/api/aaa', function (req, res) {
-
-   
-});
-
-
-
-// application -------------------------------------------------------------
-app.get('*', function (req, res) {
-    res.sendFile(__dirname + '/public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
-});
-
 
 // listen (start app with node server.js) ======================================
 app.listen(app.get('port'), function() {
