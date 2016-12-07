@@ -108,6 +108,8 @@ app.post('/api/salvarpost', function (req, res) {
     console.log('----------');
     console.log(req.body);
     console.log('**********');
+    
+    res.status(200).send('salvar post ok');
 });
 
 app.get('/fetch', function (req, res) {
