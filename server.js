@@ -11,6 +11,7 @@ var async = require('async');
 var Sequelize = require('sequelize');
 var Enumerable = require('linq');
 var fs = require('fs');
+//var request = require('request');
 
 
 // configuration =================
@@ -138,6 +139,16 @@ app.post('/api/salvarpost', function (req, res) {
 
         res.json(resposta);
     });
+});
+
+app.post('/api/downloadfoto', function (req, res) {
+
+    console.log('req.body');
+    console.log(req.body);
+    console.log('');
+    
+    var file = __dirname + '/uploads/' + req.body.nomeArquivo;
+    res.download(file); // Set disposition and send it.
 });
 
 app.post('/api/obterposts', function (req, res) {
