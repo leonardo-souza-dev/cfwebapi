@@ -24,15 +24,6 @@ app.use(methodOverride());
 app.use(bodyParser({uploadDir:'/path/to/temporary/directory/to/store/uploaded/files'}));
 var connStr = 'mysql://ch4pj48srg20sqnt:mi0nrgdxn1qpv4w9@tkck4yllxdrw0bhi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/ryvfnuo9gyupf0g7';
 var connection = mysql.createConnection(connStr);
-var storage = multer.diskStorage({
-  destination: function (req, file, callback) {
-    callback(null, './uploads');
-  },
-  filename: function (req, file, callback) {
-    console.log(file);
-    callback(null, file.fieldname + '-' + Date.now() + '.' + file.originalname.split('.')[file.originalname.split('.').length-1]);
-  }
-});
 
 
 //ORM
@@ -76,14 +67,24 @@ var Usuario = sequelize.define('usuario', {
 var Post = sequelize.define('post', {
         postId: { 
             type: Sequelize.INTEGER, 
-            field: 'postId', 
+            field: 'PostId', 
             allowNull: false, 
             primaryKey: true, 
             autoIncrement: true 
         },
         legenda: { 
             type: Sequelize.STRING, 
-            field: 'legenda',
+            field: 'Legenda',
+            allowNull: false  
+        },
+        nomeArquivo: { 
+            type: Sequelize.STRING, 
+            field: 'NomeArquivo',
+            allowNull: false  
+        },
+        usuarioId: { 
+            type: Sequelize.INTEGER, 
+            field: 'UsuarioId',
             allowNull: false  
         }
     },{ tableName: 'Post' }
@@ -91,26 +92,58 @@ var Post = sequelize.define('post', {
 ;
 
 //https://codeforgeek.com/2014/11/file-uploads-using-node-js//
+var storage = multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, './uploads');
+  },
+  filename: function (req, file, callback) {
+    console.log(file);
+    var nomeArquivo = file.fieldname + '_' + Date.now() + '.' + file.originalname.split('.')[file.originalname.split('.').length-1];
+    console.log('nomeArquivo: ' + nomeArquivo);
+    callback(null, nomeArquivo);
+  }
+});
 var upload = multer({ storage : storage }).single('foto_de_catioro');
 app.post('/api/uploadfoto',function(req,res){
-    upload(req,res,function(err) {
+	
+	console.log('req.body');
+	console.log(req.body);
+	console.log('');
+
+    upload(req, res, function(err, data) {
         if(err) {
             console.log(err);
             return res.end("Error uploading file.");
         }
-        res.end("File is uploaded");
+
+		var resposta = { sucesso: true, mensagem: 'foto upload ok', nomeArquivo: req.file.filename };
+
+        res.json(resposta);
     });
 });
 
 // routes ==================================================
 app.post('/api/salvarpost', function (req, res) {
 
-    console.log('----------');
-    console.log(req.body);
-    console.log('**********');
-    
-    res.status(200).send('salvar post ok');
+    Post.create({ 
+	        legenda: req.body.Legenda,
+	        nomeArquivo: req.body.NomeArquivo,
+	        usuarioId: req.body.UsuarioId
+	    }).then(function(post) {
+	        console.log('post');
+	        console.log(JSON.stringify(post));
+	        console.log('');
+
+			var resposta = { sucesso: true, mensagem: 'post salvo ok', postId: post.postId };
+
+		    res.json(resposta);
+        });
 });
+
+app.get('/obterfoto', function (req, res) {
+    res.status(200).send('obter foto ok');
+});
+
 
 app.get('/fetch', function (req, res) {
     res.status(200).send('ok');
