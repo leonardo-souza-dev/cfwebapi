@@ -11,7 +11,7 @@ var async = require('async');
 var Sequelize = require('sequelize');
 var Enumerable = require('linq');
 var fs = require('fs');
-//var request = require('request');
+var url = require('url');
 
 
 // configuration =================
@@ -151,6 +151,20 @@ app.post('/api/downloadfoto', function (req, res) {
     res.download(file); // Set disposition and send it.
 });
 
+app.get('/api/foto', function (req, res) {
+
+    var url_parts = url.parse(req.url, true);
+	var query = url_parts.query;
+	var na = req.query.na;
+
+    console.log('na');
+    console.log(na);
+    console.log('');
+    
+    var file = __dirname + '/uploads/' + na;
+    res.download(file); // Set disposition and send it.
+});
+
 app.post('/api/obterposts', function (req, res) {
 
     //console.log('req.body');
@@ -161,16 +175,19 @@ app.post('/api/obterposts', function (req, res) {
         .findAll({ where: { usuarioId: req.body.usuarioId } })
         .then(function (posts) {
 
-            console.log(posts);
+            console.log('posts');
+            console.log(JSON.stringify(posts));
+            console.log('');
 
-            var resposta = { sucesso: true, mensagem: 'obter posts ok', posts: posts };
+            //var resposta = { sucesso: true, mensagem: 'obter posts ok', posts: posts };
 
-            res.json(resposta);
+            res.json(posts);
         });
 });
 
 
 app.get('/fetch', function (req, res) {
+
     res.status(200).send('ok');
 });
 
