@@ -12,7 +12,7 @@ var Sequelize = require('sequelize');
 var Enumerable = require('linq');
 var fs = require('fs');
 var url = require('url');
-
+var nodemailer = require('nodemailer');
 
 // configuration =================
 app.set('port', (process.env.PORT || 8084));
@@ -23,8 +23,22 @@ app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(methodOverride());
 app.use(bodyParser({ uploadDir: '/path/to/temporary/directory/to/store/uploaded/files' }));
-var connStr = 'mysql://ch4pj48srg20sqnt:mi0nrgdxn1qpv4w9@tkck4yllxdrw0bhi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/ryvfnuo9gyupf0g7';
+//var connStr = 'mysql://ch4pj48srg20sqnt:mi0nrgdxn1qpv4w9@tkck4yllxdrw0bhi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/ryvfnuo9gyupf0g7';
+var connStr = process.env.CF_MYSQL_CONNSTR;
 var connection = mysql.createConnection(connStr);
+
+var mailPwd = process.env.CF_MAIL_PWD;
+// create reusable transporter object using the default SMTP transport
+var transporter = nodemailer.createTransport('smtps://catiorofofo.app%40gmail.com:' + mailPwd + '@smtp.gmail.com');
+
+// setup e-mail data with unicode symbols
+var mailOptions = {
+    from: '"Catioro Fofo ?" <catiorofofo.app@gmail.com>', // sender address
+    to: 'leonardotreze@gmail.com', // list of receivers separados por virgula
+    subject: 'Hello ✔', // Subject line
+    text: 'Hello world ?', // plaintext body
+    html: '<b>Hello world ?</b>' // html body
+};
 
 
 //ORM
@@ -140,9 +154,9 @@ app.post('/api/salvarpost', function (req, res) {
         console.log(JSON.stringify(post));
         console.log('');
 
-        var resposta = { sucesso: true, mensagem: 'post salvo ok', postId: post.postId };
+        //var resposta = { sucesso: true, mensagem: 'post salvo ok', postId: post.postId };
 
-        res.json(resposta);
+        res.json(post.postId);
     });
 });
 
@@ -192,25 +206,51 @@ app.post('/api/obterposts', function (req, res) {
 
 app.post('/api/login', function (req, res) {
 
-    console.log('req.body');
-    console.log(req.body);
-    console.log('');
-
     Usuario
         .findAll({ where: { senha: req.body.senha } })
         .then(function (usuarios) {
 
             console.log('usuarios[0]');
-            //console.log(JSON.stringify(usuario[0]));
+            console.log(JSON.stringify(usuarios[0]));
             console.log('');
 
             res.json(usuarios[0]);
         });
 });
 
+app.post('/api/esquecisenha', function (req, res) {
+
+	var emailDigitado = req.body.email;
+
+    Usuario
+        .findAll({ where: { email: emailDigitado } })
+        .then(function (usuarios) {
+
+        	if (usuarios.length == 1){
+
+	            console.log('usuarios[0]');
+	            console.log(JSON.stringify(usuarios[0]));
+	            console.log('');
+
+	            // send mail with defined transport object
+				transporter.sendMail(mailOptions, function(error, info){
+    				if(error){
+	            		res.json({ mensagem: "error", sucesso: false});
+        				return console.log(error);
+    				}
+    				console.log('Message sent: ' + info.response);
+	            res.json({ mensagem: "email enviado", sucesso: true});
+				});
+
+        	} else {
+        		res.json({ mensagem: "numero de usuario com esse email nao eh um", sucesso: false});
+			}
+        });
+});
+
 
 app.get('/fetch', function (req, res) {
-
+ 
     res.status(200).send('ok');
 });
 
