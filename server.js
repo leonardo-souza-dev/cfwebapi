@@ -52,14 +52,19 @@ function pretty(j) {
 var Usuario = sequelize.define('usuario', {
     usuarioId: {
         type: Sequelize.INTEGER,
-        field: 'usuarioId',
+        field: 'UsuarioId',
         allowNull: false,
         primaryKey: true,
         autoIncrement: true
     },
-    avatarUrl: {
+    avatar: {
         type: Sequelize.STRING,
-        field: 'legenda',
+        field: 'Avatar',
+        allowNull: false
+    },
+    senha: {
+        type: Sequelize.STRING,
+        field: 'Senha',
         allowNull: false
     }
 }, { tableName: 'Usuario' }
@@ -182,6 +187,24 @@ app.post('/api/obterposts', function (req, res) {
             //var resposta = { sucesso: true, mensagem: 'obter posts ok', posts: posts };
 
             res.json(posts);
+        });
+});
+
+app.post('/api/login', function (req, res) {
+
+    console.log('req.body');
+    console.log(req.body);
+    console.log('');
+
+    Usuario
+        .findAll({ where: { senha: req.body.senha } })
+        .then(function (usuarios) {
+
+            console.log('usuarios[0]');
+            //console.log(JSON.stringify(usuario[0]));
+            console.log('');
+
+            res.json(usuarios[0]);
         });
 });
 
