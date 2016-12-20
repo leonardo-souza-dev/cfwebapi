@@ -123,14 +123,19 @@ var storage = multer.diskStorage({
     },
     filename: function (req, file, callback) {
         console.log(file);
-        var nomeArquivo = file.fieldname + '_' + Date.now() + '.' + file.originalname.split('.')[file.originalname.split('.').length - 1];
+        var usuarioId = file.originalname.split('.')[0];
+        console.log('usuarioId');console.log(usuarioId);
+        var parteB = file.originalname.split('.')[file.originalname.split('.').length - 1];
+        console.log('parteB');console.log(parteB);
+        var nomeArquivo = file.fieldname + '_' + usuarioId + '_' + Date.now() + '.' + parteB;
         console.log('nomeArquivo: ' + nomeArquivo);
         callback(null, nomeArquivo);
     }
 });
-var upload = multer({ storage: storage }).single('foto_de_catioro');
+var upload = multer({ storage: storage }).single('cf');
 app.post('/api/uploadfoto', function (req, res) {
-
+	
+	console.log('*** uploadfoto ***');
     console.log('req.body');
     console.log(req.body);
     console.log('');
@@ -191,9 +196,10 @@ app.get('/api/foto', function (req, res) {
 
 app.post('/api/obterposts', function (req, res) {
 
-    //console.log('req.body');
-    //console.log(req.body);
-    //console.log('');
+    console.log('*** OBTER POSTS ***');
+    console.log('req.body');
+    console.log(req.body);
+    console.log('');
 
     Post
         .findAll({ where: { usuarioId: req.body.usuarioId } })
