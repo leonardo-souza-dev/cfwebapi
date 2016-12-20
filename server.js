@@ -74,6 +74,11 @@ var Usuario = sequelize.define('usuario', {
     avatar: {
         type: Sequelize.STRING,
         field: 'Avatar',
+        allowNull: true
+    },
+    email: {
+        type: Sequelize.STRING,
+        field: 'Email',
         allowNull: false
     },
     senha: {
@@ -216,6 +221,38 @@ app.post('/api/login', function (req, res) {
 
             res.json(usuarios[0]);
         });
+});
+
+app.post('/api/cadastro', function (req, res) {
+
+	console.log('req.body');
+	console.log(req.body);
+	console.log('');
+
+	var pEmail = req.body.email;
+	var pSenha = req.body.senha;
+
+	Usuario
+		.findOne({ where: {email: pEmail }})
+		.then(function(user) {
+
+			if (user == null) {
+				console.log('1');
+
+				Usuario
+					.create({ email: pEmail, senha: pSenha })
+					.then(function(user2) {
+					
+						console.log('2');
+						console.log('usuario nao encontrado com o email passado, mas foi criado um');
+
+			    		res.json({ sucesso: true, mensagem: "User created!", usuario: user2 });
+		    		});
+			} else {
+				console.log('3');
+				res.json({ sucesso: true, mensagem: 'usuario ja existe', usuario: user });
+			}
+	});
 });
 
 app.post('/api/esquecisenha', function (req, res) {
