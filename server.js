@@ -23,12 +23,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(methodOverride());
 app.use(bodyParser({ uploadDir: '/path/to/temporary/directory/to/store/uploaded/files' }));
-//var connStr = 'mysql://ch4pj48srg20sqnt:mi0nrgdxn1qpv4w9@tkck4yllxdrw0bhi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/ryvfnuo9gyupf0g7';
 var connStr = process.env.CF_MYSQL_CONNSTR;
 var connection = mysql.createConnection(connStr);
-
 var mailPwd = process.env.CF_MAIL_PWD;
-// create reusable transporter object using the default SMTP transport
 var transporter = nodemailer.createTransport('smtps://catiorofofo.app%40gmail.com:' + mailPwd + '@smtp.gmail.com');
 
 // setup e-mail data with unicode symbols
@@ -221,11 +218,20 @@ app.post('/api/login', function (req, res) {
         .findAll({ where: { senha: req.body.senha } })
         .then(function (usuarios) {
 
-            console.log('usuarios[0]');
-            console.log(JSON.stringify(usuarios[0]));
-            console.log('');
+        	if (usuarios == null && usuarios.length > 0){
 
-            res.json(usuarios[0]);
+	            console.log('usuarios[0]');
+	            console.log(JSON.stringify(usuarios[0]));
+	            console.log('');
+
+	            res.json({ mensagem: "usuario encontrado", usuario: usuarios[0]});
+        		
+        	} else if (usuarios == null) {
+
+	            res.json({ mensagem: "email nao encontrado"});
+
+        	}
+
         });
 });
 
@@ -233,7 +239,7 @@ app.post('/api/cadastro', function (req, res) {
 
 	console.log('req.body');
 	console.log(req.body);
-	console.log('');
+	console.log(''); 
 
 	var pEmail = req.body.email;
 	var pSenha = req.body.senha;
