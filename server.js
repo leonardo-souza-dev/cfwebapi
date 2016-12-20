@@ -33,11 +33,11 @@ var transporter = nodemailer.createTransport('smtps://catiorofofo.app%40gmail.co
 
 // setup e-mail data with unicode symbols
 var mailOptions = {
-    from: '"Catioro Fofo ?" <catiorofofo.app@gmail.com>', // sender address
+    from: '"Catioro Fofo" <catiorofofo.app@gmail.com>', // sender address
     to: 'leonardotreze@gmail.com', // list of receivers separados por virgula
-    subject: 'Hello ✔', // Subject line
-    text: 'Hello world ?', // plaintext body
-    html: '<b>Hello world ?</b>' // html body
+    subject: 'sua senha no catioro fofo', // Subject line
+    text: 'oi, sua senha no catioro fofo é ', // plaintext body
+    html: '<b>oi, sua senha no catioro fofo é </b>' // html body
 };
 
 
@@ -156,7 +156,7 @@ app.post('/api/salvarpost', function (req, res) {
 
         //var resposta = { sucesso: true, mensagem: 'post salvo ok', postId: post.postId };
 
-        res.json(post.postId);
+        res.json({ postId: post.postId});
     });
 });
 
@@ -233,6 +233,10 @@ app.post('/api/esquecisenha', function (req, res) {
 	            console.log('');
 
 	            // send mail with defined transport object
+
+	            mailOptions.to = emailDigitado;
+	            mailOptions.html = mailOptions.html + usuarios[0].senha;
+
 				transporter.sendMail(mailOptions, function(error, info){
     				if(error){
 	            		res.json({ mensagem: "error", sucesso: false});
@@ -243,7 +247,7 @@ app.post('/api/esquecisenha', function (req, res) {
 				});
 
         	} else {
-        		res.json({ mensagem: "numero de usuario com esse email nao eh um", sucesso: false});
+        		res.json({ mensagem: "nao foi encontrado usuario com esse email", sucesso: false });
 			}
         });
 });
