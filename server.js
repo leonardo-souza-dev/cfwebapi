@@ -47,19 +47,6 @@ var sequelize = new Sequelize(connStr, {
     }
 });
 
-//utils
-function pretty(j) {
-
-    var identacao = ',\r\n    "';
-
-    var j = j.replace(',"', identacao).replace(',"', identacao).replace(',"', identacao)
-    .replace(',"', identacao).replace(',"', identacao).replace(',"', identacao).replace(',"', identacao)
-    .replace(',"', identacao).replace(',"', identacao).replace(',"', identacao).replace(',"', identacao)
-    .replace(',"', identacao).replace(',"', identacao).replace(',"', identacao).replace(',"', identacao);
-
-    return j;
-}
-
 var Usuario = sequelize.define('usuario', {
     usuarioId: {
         type: Sequelize.INTEGER,
@@ -82,8 +69,7 @@ var Usuario = sequelize.define('usuario', {
         type: Sequelize.STRING,
         field: 'Senha',
         allowNull: false
-    }
-}, { tableName: 'Usuario' }
+    }}, { tableName: 'Usuario' }
 );
 
 var Post = sequelize.define('post', {
@@ -108,24 +94,43 @@ var Post = sequelize.define('post', {
         type: Sequelize.INTEGER,
         field: 'UsuarioId',
         allowNull: false
-    }
-}, { tableName: 'Post' }
+    }}, { tableName: 'Post' }
 );
-;
 
-//https://codeforgeek.com/2014/11/file-uploads-using-node-js//
+var Curtida = sequelize.define('curtida',  {
+    postId: {
+        type: Sequelize.INTEGER,
+        field: 'PostId',
+        allowNull: false,
+        primaryKey: true
+    },
+    usuarioId: {
+        type: Sequelize.INTEGER,
+        field: 'UsuarioId',
+        allowNull: false,
+        primaryKey: true
+    }}, { tableName: 'Curtida' }
+);
+
+Post.hasMany(Curtida, { 
+	foreignKey: 'postId',
+	constraints: false
+});
+Curtida.belongsToMany(Post, { 
+	through: 'Curtida',
+	foreignKey: 'postId',
+	constraints: false
+});
+
+// routes ==================================================
 var storage = multer.diskStorage({
     destination: function (req, file, callback) {
         callback(null, './uploads');
     },
     filename: function (req, file, callback) {
-        console.log(file);
         var usuarioId = file.originalname.split('.')[0];
-        console.log('usuarioId');console.log(usuarioId);
         var parteB = file.originalname.split('.')[file.originalname.split('.').length - 1];
-        console.log('parteB');console.log(parteB);
         var nomeArquivo = file.fieldname + '_' + usuarioId + '_' + Date.now() + '.' + parteB;
-        console.log('nomeArquivo: ' + nomeArquivo);
         callback(null, nomeArquivo);
     }
 });
@@ -149,7 +154,28 @@ app.post('/api/uploadfoto', function (req, res) {
     });
 });
 
-// routes ==================================================
+app.post('/api/curtir', function (req, res) {
+
+    console.log('req.body.usuarioId');
+    console.log(req.body.usuarioId);
+    console.log('req.body.postId');
+    console.log(req.body.postId);
+
+    Curtida.create({
+        usuarioId: req.body.usuarioId,
+        postId: req.body.postId
+    }).then(function (curtidaa) {
+    	
+        console.log('curtidaa');
+        console.log(JSON.stringify(curtidaa));
+        console.log('');
+
+        var resposta = { mensagem: "SUCESSO", curtida: curtidaa };
+
+        res.json(resposta);
+    });
+});
+
 app.post('/api/salvarpost', function (req, res) {
 
     Post.create({
@@ -193,6 +219,22 @@ app.get('/api/foto', function (req, res) {
 
 app.post('/api/obterposts', function (req, res) {
 
+    Post
+        .findAll({limit:5, include: [ { model: Curtida }] })
+        .then(function (posts) {
+
+            console.log('posts');
+            console.log(JSON.stringify(posts));
+            console.log('');
+
+            //var resposta = { sucesso: true, mensagem: 'obter posts ok', posts: posts };
+
+            res.json(posts);
+        });
+});
+
+app.post('/api/obterpostsOld', function (req, res) {
+
     console.log('*** OBTER POSTS ***');
     console.log('req.body');
     console.log(req.body);
@@ -214,21 +256,39 @@ app.post('/api/obterposts', function (req, res) {
 
 app.post('/api/login', function (req, res) {
 
+	console.log('*** LOGIN ***');
+
+	var emailDigitado = req.body.email;
+	var senhaDigitada = req.body.senha;
+
     Usuario
-        .findAll({ where: { senha: req.body.senha } })
+        .findAll({ where: { email: emailDigitado, senha: senhaDigitada }})
         .then(function (usuarios) {
 
-        	if (usuarios == null && usuarios.length > 0){
+			console.log('** usuarios **');
+			console.log(JSON.stringify(usuarios[0]));
+
+			console.log('*** usuarios != null ***');
+			console.log(usuarios != null);
+
+			console.log('*** usuarios.length > 0 ***');
+			console.log(usuarios.length > 0);
+
+        	if (usuarios != null && usuarios.length > 0){
+
+				console.log('*** USUARIO ENCONTRADO ***');
 
 	            console.log('usuarios[0]');
 	            console.log(JSON.stringify(usuarios[0]));
 	            console.log('');
 
-	            res.json({ mensagem: "usuario encontrado", usuario: usuarios[0]});
+	            res.json({ mensagem: "SUCESSO", usuario: usuarios[0]});
         		
-        	} else if (usuarios == null) {
+        	} else if (usuarios == null || usuarios.length == 0) {
 
-	            res.json({ mensagem: "email nao encontrado"});
+        		console.log('*** USUARIO NAO ENCONTRADO ***');
+
+	            res.json({ mensagem: "INEXISTENTE"});
 
         	}
 
@@ -301,13 +361,12 @@ app.post('/api/esquecisenha', function (req, res) {
         });
 });
 
-
 app.get('/fetch', function (req, res) {
  
     res.status(200).send('ok');
 });
 
-// listen (start app with node server.js) ======================================
+// listen ======================================
 app.listen(app.get('port'), function () {
 
     console.log('cf web api na porta', app.get('port'));
