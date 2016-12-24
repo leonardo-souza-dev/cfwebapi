@@ -176,6 +176,26 @@ app.post('/api/curtir', function (req, res) {
     });
 });
 
+app.post('/api/descurtir', function (req, res) {
+
+    console.log('req.body.usuarioId');
+    console.log(req.body.usuarioId);
+    console.log('req.body.postId');
+    console.log(req.body.postId);
+
+    Curtida.destroy({ 
+    	where:{
+        	usuarioId: req.body.usuarioId,
+        	postId: req.body.postId}, 
+        force: true 
+    }).then(function(){
+    	
+        var resposta = { mensagem: "SUCESSO" };
+
+        res.json(resposta);
+    });
+});
+
 app.post('/api/salvarpost', function (req, res) {
 
     Post.create({
