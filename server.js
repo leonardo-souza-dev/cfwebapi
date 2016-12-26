@@ -65,6 +65,11 @@ var Usuario = sequelize.define('usuario', {
         field: 'Email',
         allowNull: false
     },
+    nomeUsuario: {
+        type: Sequelize.STRING,
+        field: 'NomeUsuario',
+        allowNull: false
+    },
     senha: {
         type: Sequelize.STRING,
         field: 'Senha',
@@ -345,6 +350,51 @@ app.post('/api/cadastro', function (req, res) {
 				res.json({ sucesso: true, mensagem: 'usuario ja existe', usuario: user });
 			}
 	});
+});
+
+app.post('/api/atualizarusuario', function (req, res) {
+
+	console.log('req.body');
+	console.log(req.body);
+	console.log(''); 
+
+	var pEmail = req.body.email;
+	var pUsuarioId = req.body.usuarioId;
+	var pNomeUsuario = req.body.nomeUsuario;
+
+	if (pNomeUsuario != null) {
+		Usuario
+		.findOne({ where: { nomeUsuario: pNomeUsuario }})
+		.then(function(user) {
+
+			if (user == null){
+				Usuario
+					.findOne({ where: {email: pEmail, usuarioId: pUsuarioId }})
+					.then(function(user) {
+						console.log('user');console.log(JSON.stringify(user));console.log('');
+
+						if (user != null) {
+							console.log('achou');
+							user
+								.update(
+									{ nomeUsuario: pNomeUsuario })
+								.then(function(user2) {
+									console.log('atualizou');
+
+						    		res.json({ mensagem: "SUCESSO" });
+					    		});
+						} else {
+							console.log('nao achou');
+
+							res.json({ mensagem: 'INEXISTENTE' });
+						}
+				});
+			} else {
+
+				res.json({ mensagem: 'JAEXISTE' });
+			}
+		});
+	}
 });
 
 app.post('/api/esquecisenha', function (req, res) {
