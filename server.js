@@ -37,7 +37,6 @@ var mailOptions = {
     html: '<b>oi, sua senha no catioro fofo é </b>' // html body
 };
 
-
 //ORM
 var sequelize = new Sequelize(connStr, {
     define: {
@@ -117,9 +116,6 @@ var Curtida = sequelize.define('curtida',  {
     }}, { tableName: 'Curtida' }
 );
 
-
-//Post.belongsTo(Usuario);
-
 Post.hasMany(Curtida, { 
 	foreignKey: 'postId',
 	constraints: false
@@ -164,19 +160,10 @@ app.post('/api/uploadfoto', function (req, res) {
 
 app.post('/api/curtir', function (req, res) {
 
-    console.log('req.body.usuarioId');
-    console.log(req.body.usuarioId);
-    console.log('req.body.postId');
-    console.log(req.body.postId);
-
     Curtida.create({
         usuarioId: req.body.usuarioId,
         postId: req.body.postId
     }).then(function (curtidaa) {
-    	
-        console.log('curtidaa');
-        console.log(JSON.stringify(curtidaa));
-        console.log('');
 
         var resposta = { mensagem: "SUCESSO", curtida: curtidaa };
 
@@ -185,11 +172,6 @@ app.post('/api/curtir', function (req, res) {
 });
 
 app.post('/api/descurtir', function (req, res) {
-
-    console.log('req.body.usuarioId');
-    console.log(req.body.usuarioId);
-    console.log('req.body.postId');
-    console.log(req.body.postId);
 
     Curtida.destroy({ 
     	where:{
@@ -211,11 +193,6 @@ app.post('/api/salvarpost', function (req, res) {
         nomeArquivo: req.body.NomeArquivo,
         usuarioId: req.body.UsuarioId
     }).then(function (post) {
-        console.log('post');
-        console.log(JSON.stringify(post));
-        console.log('');
-
-        //var resposta = { sucesso: true, mensagem: 'post salvo ok', postId: post.postId };
 
         res.json({ postId: post.postId});
     });
@@ -250,33 +227,6 @@ app.get('/api/obterposts', function (req, res) {
     Post
         .findAll({limit:5, include: [ { model: Curtida }] })
         .then(function (posts) {
-
-            console.log('posts');
-            console.log(JSON.stringify(posts));
-            console.log('');
-
-            //var resposta = { sucesso: true, mensagem: 'obter posts ok', posts: posts };
-
-            res.json(posts);
-        });
-});
-
-app.post('/api/obterpostsOld', function (req, res) {
-
-    console.log('*** OBTER POSTS ***');
-    console.log('req.body');
-    console.log(req.body);
-    console.log('');
-
-    Post
-        .findAll({ where: { usuarioId: req.body.usuarioId } })
-        .then(function (posts) {
-
-            console.log('posts');
-            console.log(JSON.stringify(posts));
-            console.log('');
-
-            //var resposta = { sucesso: true, mensagem: 'obter posts ok', posts: posts };
 
             res.json(posts);
         });
@@ -325,10 +275,6 @@ app.post('/api/login', function (req, res) {
 
 app.post('/api/cadastro', function (req, res) {
 
-	console.log('req.body');
-	console.log(req.body);
-	console.log(''); 
-
 	var pEmail = req.body.email;
 	var pSenha = req.body.senha;
 	var pNomeUsuario = req.body.nomeUsuario;
@@ -345,8 +291,7 @@ app.post('/api/cadastro', function (req, res) {
 						senha: pSenha, 
 						nomeUsuario: pNomeUsuario,
 						nomeArquivoAvatar: pNomeArquivoAvatar })
-					.then(function(user2) {
-					
+					.then(function(user2) {					
 						console.log('usuario nao encontrado com o email passado, mas foi criado um');
 
 			    		res.json({ sucesso: true, mensagem: "SUCESSO", usuario: user2 });
@@ -359,10 +304,6 @@ app.post('/api/cadastro', function (req, res) {
 });
 
 app.post('/api/atualizarusuario', function (req, res) {
-
-	console.log('req.body');
-	console.log(req.body);
-	console.log(''); 
 
 	var pEmail = req.body.email;
 	var pUsuarioId = req.body.usuarioId;
@@ -427,12 +368,6 @@ app.post('/api/esquecisenha', function (req, res) {
         .then(function (usuarios) {
 
         	if (usuarios.length == 1){
-
-	            console.log('usuarios[0]');
-	            console.log(JSON.stringify(usuarios[0]));
-	            console.log('');
-
-	            // send mail with defined transport object
 
 	            mailOptions.to = emailDigitado;
 	            mailOptions.html = mailOptions.html + usuarios[0].senha;
