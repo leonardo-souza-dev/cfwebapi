@@ -55,9 +55,9 @@ var Usuario = sequelize.define('usuario', {
         primaryKey: true,
         autoIncrement: true
     },
-    avatar: {
+    nomeArquivoAvatar: {
         type: Sequelize.STRING,
-        field: 'Avatar',
+        field: 'NomeArquivoAvatar',
         allowNull: true
     },
     email: {
@@ -116,6 +116,9 @@ var Curtida = sequelize.define('curtida',  {
         primaryKey: true
     }}, { tableName: 'Curtida' }
 );
+
+
+//Post.belongsTo(Usuario);
 
 Post.hasMany(Curtida, { 
 	foreignKey: 'postId',
@@ -242,7 +245,7 @@ app.get('/api/foto', function (req, res) {
     res.download(file); // Set disposition and send it.
 });
 
-app.post('/api/obterposts', function (req, res) {
+app.get('/api/obterposts', function (req, res) {
 
     Post
         .findAll({limit:5, include: [ { model: Curtida }] })
@@ -328,26 +331,29 @@ app.post('/api/cadastro', function (req, res) {
 
 	var pEmail = req.body.email;
 	var pSenha = req.body.senha;
+	var pNomeUsuario = req.body.nomeUsuario;
+	var pNomeArquivoAvatar = 'avatar.jpg';
 
 	Usuario
 		.findOne({ where: {email: pEmail }})
 		.then(function(user) {
 
 			if (user == null) {
-				console.log('1');
-
 				Usuario
-					.create({ email: pEmail, senha: pSenha })
+					.create({ 
+						email: pEmail, 
+						senha: pSenha, 
+						nomeUsuario: pNomeUsuario,
+						nomeArquivoAvatar: pNomeArquivoAvatar })
 					.then(function(user2) {
 					
-						console.log('2');
 						console.log('usuario nao encontrado com o email passado, mas foi criado um');
 
-			    		res.json({ sucesso: true, mensagem: "User created!", usuario: user2 });
+			    		res.json({ sucesso: true, mensagem: "SUCESSO", usuario: user2 });
 		    		});
 			} else {
 				console.log('3');
-				res.json({ sucesso: true, mensagem: 'usuario ja existe', usuario: user });
+				res.json({ sucesso: true, mensagem: 'JAEXISTE', usuario: user });
 			}
 	});
 });
@@ -367,31 +373,46 @@ app.post('/api/atualizarusuario', function (req, res) {
 		.findOne({ where: { nomeUsuario: pNomeUsuario }})
 		.then(function(user) {
 
-			if (user == null){
+			var nomeDeUsuarioDisponivel = user == null;
+
+			if (nomeDeUsuarioDisponivel){
+				console.log('***** nome de usuario disponivel ');
 				Usuario
 					.findOne({ where: {email: pEmail, usuarioId: pUsuarioId }})
 					.then(function(user) {
-						console.log('user');console.log(JSON.stringify(user));console.log('');
 
 						if (user != null) {
-							console.log('achou');
+							console.log('***** encontrado usuario que ta editando o perfil ');console.log(JSON.stringify(user));console.log('');
 							user
 								.update(
 									{ nomeUsuario: pNomeUsuario })
 								.then(function(user2) {
-									console.log('atualizou');
+									console.log('***** atualizou usuario id #' + user.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
 
 						    		res.json({ mensagem: "SUCESSO" });
 					    		});
 						} else {
-							console.log('nao achou');
+							console.log('***** nao encontrado usuario que quer editar o perfil');
 
 							res.json({ mensagem: 'INEXISTENTE' });
 						}
 				});
 			} else {
+				Usuario
+					.findOne({ where: { usuarioId: pUsuarioId }})
+					.then(function(user) {
+						console.log('user');console.log(JSON.stringify(user));console.log('');
 
-				res.json({ mensagem: 'JAEXISTE' });
+						if (user != null) {
+							console.log('***** nome de usuario ja é do proprio que esta editando');
+
+							res.json({ mensagem: 'SUCESSO' });
+						} else {
+							console.log('ERROGENERICO');
+
+							res.json({ mensagem: 'ERROGENERICO' });
+						}
+				});
 			}
 		});
 	}
