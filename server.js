@@ -129,16 +129,19 @@ Curtida.belongsToMany(Post, {
 // routes ==================================================
 var storage = multer.diskStorage({
     destination: function (req, file, callback) {
+    	console.log('req.body');console.log(req.body);console.log('');
         callback(null, './uploads');
     },
     filename: function (req, file, callback) {
+    	console.log('file');console.log(file);console.log('');
+    	console.log('req.body');console.log(req.body);console.log('');
         var usuarioId = file.originalname.split('.')[0];
         var parteB = file.originalname.split('.')[file.originalname.split('.').length - 1];
         var nomeArquivo = file.fieldname + '_' + usuarioId + '_' + Date.now() + '.' + parteB;
         callback(null, nomeArquivo);
     }
 });
-var upload = multer({ storage: storage }).single('cf');
+var uploadCf = multer({ storage: storage }).single('cf');
 app.post('/api/uploadfoto', function (req, res) {
 	
 	console.log('*** uploadfoto ***');
@@ -146,13 +149,33 @@ app.post('/api/uploadfoto', function (req, res) {
     console.log(req.body);
     console.log('');
 
-    upload(req, res, function (err, data) {
+    uploadCf(req, res, function (err, data) {
         if (err) {
             console.log(err);
             return res.end("Error uploading file.");
         }
 
         var resposta = { sucesso: true, mensagem: 'foto upload ok', nomeArquivo: req.file.filename };
+
+        res.json(resposta);
+    });
+});
+
+var uploadAv = multer({ storage: storage }).single('av');
+app.post('/api/uploadavatar', function (req, res) {
+	
+	console.log('*** upload avatar ***');
+    console.log('req.body');
+    console.log(req.body);
+    console.log('');
+
+    uploadAv(req, res, function (err, data) {
+        if (err) {
+            console.log(err);
+            return res.end("Error uploading avatar.");
+        }
+
+        var resposta = { sucesso: true, mensagem: 'avatar upload ok', nomeArquivo: req.file.filename };
 
         res.json(resposta);
     });
@@ -308,6 +331,7 @@ app.post('/api/atualizarusuario', function (req, res) {
 	var pEmail = req.body.email;
 	var pUsuarioId = req.body.usuarioId;
 	var pNomeUsuario = req.body.nomeUsuario;
+	var pNomeArquivoAvatar = req.body.nomeArquivoAvatar;
 
 	if (pNomeUsuario != null) {
 		Usuario
@@ -324,11 +348,16 @@ app.post('/api/atualizarusuario', function (req, res) {
 
 						if (user != null) {
 							console.log('***** encontrado usuario que ta editando o perfil ');console.log(JSON.stringify(user));console.log('');
+							console.log('***** pNomeUsuario');console.log(pNomeUsuario);console.log('');
+							console.log('***** pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
 							user
 								.update(
-									{ nomeUsuario: pNomeUsuario })
+									{ 
+										nomeUsuario: pNomeUsuario, 
+										nomeArquivoAvatar: pNomeArquivoAvatar 
+									})
 								.then(function(user2) {
-									console.log('***** atualizou usuario id #' + user.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+									console.log('***** atualizou usuario id #' + user2.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
 
 						    		res.json({ mensagem: "SUCESSO" });
 					    		});
@@ -341,13 +370,21 @@ app.post('/api/atualizarusuario', function (req, res) {
 			} else {
 				Usuario
 					.findOne({ where: { usuarioId: pUsuarioId }})
-					.then(function(user) {
-						console.log('user');console.log(JSON.stringify(user));console.log('');
+					.then(function(user3) {
+						console.log('user3');console.log(JSON.stringify(user3));console.log('');
 
-						if (user != null) {
+						if (user3 != null) {
 							console.log('***** nome de usuario ja é do proprio que esta editando');
+							user3
+								.update(
+									{ 
+										nomeArquivoAvatar: pNomeArquivoAvatar 
+									})
+								.then(function(user4) {
+									console.log('***** atualizou usuario id #' + user4.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
 
-							res.json({ mensagem: 'SUCESSO' });
+						    		res.json({ mensagem: "SUCESSO" });
+					    		});
 						} else {
 							console.log('ERROGENERICO');
 
