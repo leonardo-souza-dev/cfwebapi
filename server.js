@@ -24,11 +24,9 @@ app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(methodOverride());
 app.use(bodyParser({ uploadDir: '/path/to/temporary/directory/to/store/uploaded/files' }));
 var connStr = process.env.CF_MYSQL_CONNSTR;
-console.log('connStr: ' + connStr)
 var connection = mysql.createConnection(connStr);
 var mailPwd = process.env.CF_MAIL_PWD;
 var transporter = nodemailer.createTransport('smtps://catiorofofo.app%40gmail.com:' + mailPwd + '@smtp.gmail.com');
-console.log(' configuration ok ');
 
 // setup e-mail data with unicode symbols
 var mailOptions = {
@@ -252,7 +250,7 @@ app.get('/api/foto', function (req, res) {
 app.get('/api/obterposts', function (req, res) {
 
     Post
-        .findAll({limit:5, include: [ Curtida, Usuario ] })
+        .findAll({limit:50, include: [ Curtida, Usuario ] })
         .then(function (posts) {
 
         	console.log('****** posts[0]');
