@@ -24,9 +24,11 @@ app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(methodOverride());
 app.use(bodyParser({ uploadDir: '/path/to/temporary/directory/to/store/uploaded/files' }));
 var connStr = process.env.CF_MYSQL_CONNSTR;
+console.log('connStr: ' + connStr)
 var connection = mysql.createConnection(connStr);
 var mailPwd = process.env.CF_MAIL_PWD;
 var transporter = nodemailer.createTransport('smtps://catiorofofo.app%40gmail.com:' + mailPwd + '@smtp.gmail.com');
+console.log(' configuration ok ');
 
 // setup e-mail data with unicode symbols
 var mailOptions = {
@@ -34,7 +36,7 @@ var mailOptions = {
     to: 'leonardotreze@gmail.com', // list of receivers separados por virgula
     subject: 'sua senha no catioro fofo', // Subject line
     text: 'oi, sua senha no catioro fofo é ', // plaintext body
-    html: '<b>oi, sua senha no catioro fofo é </b>' // html body
+    html: '<b>oi, sua  Senha no catioro fofo é </b>' // html body
 };
 
 //ORM
@@ -115,6 +117,8 @@ var Curtida = sequelize.define('curtida',  {
         primaryKey: true
     }}, { tableName: 'Curtida' }
 );
+
+Post.belongsTo(Usuario, { foreignKey: 'usuarioId'});
 
 Post.hasMany(Curtida, { 
 	foreignKey: 'postId',
@@ -248,8 +252,12 @@ app.get('/api/foto', function (req, res) {
 app.get('/api/obterposts', function (req, res) {
 
     Post
-        .findAll({limit:5, include: [ { model: Curtida }] })
+        .findAll({limit:5, include: [ Curtida, Usuario ] })
         .then(function (posts) {
+
+        	console.log('****** posts[0]');
+        	console.log(JSON.stringify(posts[0]));
+        	console.log('');
 
             res.json(posts);
         });
