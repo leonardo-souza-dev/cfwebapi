@@ -427,7 +427,7 @@ app.post('/api/esquecisenha', function (req, res) {
 
 app.get('/fetch', function (req, res) {
  
-    res.status(200).send('ok');
+    res.send({ resultado: 'ok'});
 });
 
 // listen ======================================
