@@ -442,7 +442,7 @@ app.get('/imagens', function(req, res){
     const fs = require('fs');
     fs.readdir(testFolder, (err, files) => {
 
-        //console.log('files');console.log(files);console.log('');
+        console.log('TODOS OS ARQUIVOS DO DIRETORIO');console.log(files);console.log('');
 
         async.series([
             function filesForEach(callback){
