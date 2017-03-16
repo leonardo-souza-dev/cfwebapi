@@ -353,8 +353,7 @@ app.post('/api/atualizarusuario', function (req, res) {
 							console.log('***** pNomeUsuario');console.log(pNomeUsuario);console.log('');
 							console.log('***** pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
 							user
-								.update(
-									{ 
+								.update({ 
 										nomeUsuario: pNomeUsuario, 
 										nomeArquivoAvatar: pNomeArquivoAvatar 
 									})
