@@ -1,0 +1,19 @@
+doctype html
+html
+head
+	title Imagens Catioro Fofo
+	meta(charset="utf-8")
+	meta(name="viewport" content="width=device-width, initial-scale=1")
+body
+	table
+		thead
+			tr
+				th imagem
+				th nome
+		tbody
+			each imagem in imagens
+				tr
+					td
+						img(src="#{imagem.source}", style="width:80px;height:49px")
+					td
+						a(href="/api/deletarImagem?arq=#{imagem.arquivo}") #{imagem.arquivo}

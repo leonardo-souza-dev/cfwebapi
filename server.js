@@ -1,6 +1,8 @@
 // server.js
 // set up ========================
 var express = require('express');
+//var router = express.Router();
+var path = require('path');
 var multer = require('multer');
 var app = express();
 var mysql = require('mysql');
@@ -14,7 +16,7 @@ var fs = require('fs');
 var url = require('url');
 var nodemailer = require('nodemailer');
 
-// configuration =================
+// configuration ==================
 app.set('port', (process.env.PORT || 8084));
 app.use(express.static(__dirname + '/public'));
 app.use(morgan('dev'));
@@ -23,7 +25,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 app.use(methodOverride());
 app.use(bodyParser({ uploadDir: '/path/to/temporary/directory/to/store/uploaded/files' }));
-var connStr = process.env.CF_MYSQL_CONNSTR;
+    // view engine setup
+    app.set('views', path.join(__dirname, 'views'));
+    app.set('view engine', 'jade');
+
+//temp
+//var connStr = process.env.CF_MYSQL_CONNSTR;
+var connStr = 'mysql://ch4pj48srg20sqnt:mi0nrgdxn1qpv4w9@tkck4yllxdrw0bhi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/ryvfnuo9gyupf0g7';
+
 var connection = mysql.createConnection(connStr);
 var mailPwd = process.env.CF_MAIL_PWD;
 var transporter = nodemailer.createTransport('smtps://catiorofofo.app%40gmail.com:' + mailPwd + '@smtp.gmail.com');
@@ -42,7 +51,6 @@ var sequelize = new Sequelize(connStr, {
     define: {
         timestamps: false,
         freezeTableName: true
-        //,timezone: '-03:00'  
     }
 });
 
@@ -425,9 +433,72 @@ app.post('/api/esquecisenha', function (req, res) {
         });
 });
 
+app.get('/imagens', function(req, res){
+    console.log(' - - - - - - - - imagens - - - - - - - - ');
+
+    var todasImagens = [];
+
+    const testFolder = __dirname + '/uploads/';
+    const fs = require('fs');
+    fs.readdir(testFolder, (err, files) => {
+
+        //console.log('files');console.log(files);console.log('');
+
+        async.series([
+            function filesForEach(callback){
+
+                files.forEach(file => {
+                    var urlImagem = 'https://cfwebapi.herokuapp.com/api/foto?na=' + file;
+                    var img = { source: urlImagem, arquivo: file };
+
+                    console.log('img');console.log(img);
+
+                    todasImagens.push(img);
+                });
+                callback();
+            }, 
+            function retorna(callback){
+                console.log('todasImagens');console.log(todasImagens);console.log('');
+                callback();
+            }
+        ], 
+        function(err) { 
+            if (err != null) return res.status(500).send(err);
+
+            res.render('imagens', { imagens: todasImagens });
+        });
+    });
+});
+
+app.get('/api/deletarImagem', function(req, res){
+
+    var url_parts = url.parse(req.url, true);
+	var query = url_parts.query;
+	var arquivo = req.query.arq;
+
+    console.log('arquivo');
+    console.log(arquivo);
+    console.log('');
+
+
+    var caminhoCompleto = __dirname + '/uploads/' + arquivo;
+    console.log('caminhoCompleto');
+    console.log(caminhoCompleto);
+
+    fs.exists(caminhoCompleto, function(exists) {
+        if(exists) {
+            console.log('Arquivo encontrado. Deletando agora...');
+            fs.unlink(caminhoCompleto);
+            res.redirect('/imagens');
+        } else {
+            console.log('Arquivo não encontrado.');
+        }
+    });
+})
+
 app.get('/fetch', function (req, res) {
- 
-    res.send({ resultado: 'ok'});
+
+    res.send({ foo: 'ok'});
 });
 
 // listen ======================================

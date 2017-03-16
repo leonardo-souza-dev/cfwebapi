@@ -15,7 +15,8 @@
     "body-parser": "^1.15.2",
     "method-override": "^2.3.6",
     "async": "^2.1.1",
-    "sequelize": "^3.24.4"
+    "sequelize": "^3.24.4",
+    "jade": "~1.11.0"
   },
   "author": "",
   "license": "ISC"
