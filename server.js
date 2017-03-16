@@ -47,29 +47,29 @@ var sequelize = new Sequelize(connStr, {
 });
 
 var Usuario = sequelize.define('usuario', {
-    usuarioId: {
+    UsuarioId: {
         type: Sequelize.INTEGER,
         field: 'UsuarioId',
         allowNull: false,
         primaryKey: true,
         autoIncrement: true
     },
-    nomeArquivoAvatar: {
+    NomeArquivoAvatar: {
         type: Sequelize.STRING,
         field: 'NomeArquivoAvatar',
         allowNull: true
     },
-    email: {
+    Email: {
         type: Sequelize.STRING,
         field: 'Email',
         allowNull: false
     },
-    nomeUsuario: {
+    NomeUsuario: {
         type: Sequelize.STRING,
         field: 'NomeUsuario',
         allowNull: false
     },
-    senha: {
+    Senha: {
         type: Sequelize.STRING,
         field: 'Senha',
         allowNull: false
@@ -267,38 +267,34 @@ app.post('/api/login', function (req, res) {
 
 	var emailDigitado = req.body.email;
 	var senhaDigitada = req.body.senha;
-
+    
+    //var usuarioFake = { mensagem: "SUCESSO", 
+    //                    usuario:  {
+    //                          usuarioId: 16,
+    //                          senha:"qwe", email: "qwe", nomeArquivoAvatar: "av_000016_1489186903698.jpg", nomeUsuario: "patinhadog"} };
+    //console.log(usuarioFake);
+    //res.json(usuarioFake);
     Usuario
         .findAll({ where: { email: emailDigitado, senha: senhaDigitada }})
         .then(function (usuarios) {
 
 			console.log('** usuarios **');
 			console.log(JSON.stringify(usuarios[0]));
-
 			console.log('*** usuarios != null ***');
 			console.log(usuarios != null);
-
 			console.log('*** usuarios.length > 0 ***');
 			console.log(usuarios.length > 0);
 
         	if (usuarios != null && usuarios.length > 0){
-
 				console.log('*** USUARIO ENCONTRADO ***');
-
-	            console.log('usuarios[0]');
 	            console.log(JSON.stringify(usuarios[0]));
 	            console.log('');
-
-	            res.json({ mensagem: "SUCESSO", usuario: usuarios[0]});
+	            res.json(usuarios[0]);
         		
         	} else if (usuarios == null || usuarios.length == 0) {
-
         		console.log('*** USUARIO NAO ENCONTRADO ***');
-
-	            res.json({ mensagem: "INEXISTENTE"});
-
+	            res.json({ });
         	}
-
         });
 });
 
