@@ -345,7 +345,7 @@ app.post('/api/atualizarusuario', function (req, res) {
 
 	if (pNomeUsuario != null) {
 		Usuario
-		.findOne({ where: { nomeUsuario: pNomeUsuario }})
+		.findOne({ where: { NomeUsuario: pNomeUsuario }})
 		.then(function(user) {
 
 			var nomeDeUsuarioDisponivel = user == null;
@@ -353,20 +353,20 @@ app.post('/api/atualizarusuario', function (req, res) {
 			if (nomeDeUsuarioDisponivel){
 				console.log('***** nome de usuario disponivel ');
 				Usuario
-					.findOne({ where: {email: pEmail, usuarioId: pUsuarioId }})
+					.findOne({ where: { Email: pEmail, UsuarioId: pUsuarioId }})
 					.then(function(user) {
 
 						if (user != null) {
 							console.log('***** encontrado usuario que ta editando o perfil ');console.log(JSON.stringify(user));console.log('');
-							console.log('***** pNomeUsuario');console.log(pNomeUsuario);console.log('');
+							console.log('*****     pNomeUsuario');console.log(pNomeUsuario);console.log('');
 							console.log('***** pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
 							user
 								.update({ 
-										nomeUsuario: pNomeUsuario, 
-										nomeArquivoAvatar: pNomeArquivoAvatar 
+										NomeUsuario: pNomeUsuario, 
+										NomeArquivoAvatar: pNomeArquivoAvatar 
 									})
 								.then(function(user2) {
-									console.log('***** atualizou usuario id #' + user2.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+									console.log('***** atualizou usuario id #' + user2.UsuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
 
 						    		res.json({ mensagem: "SUCESSO" });
 					    		});
@@ -378,19 +378,17 @@ app.post('/api/atualizarusuario', function (req, res) {
 				});
 			} else {
 				Usuario
-					.findOne({ where: { usuarioId: pUsuarioId }})
+					.findOne({ where: { UsuarioId: pUsuarioId }})
 					.then(function(user3) {
 						console.log('user3');console.log(JSON.stringify(user3));console.log('');
 
 						if (user3 != null) {
 							console.log('***** nome de usuario ja é do proprio que esta editando');
+							console.log('*****     pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
 							user3
-								.update(
-									{ 
-										nomeArquivoAvatar: pNomeArquivoAvatar 
-									})
+								.update({ NomeArquivoAvatar: pNomeArquivoAvatar })
 								.then(function(user4) {
-									console.log('***** atualizou usuario id #' + user4.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+									console.log('***** atualizou usuario id #' + user4.UsuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
 
 						    		res.json({ mensagem: "SUCESSO" });
 					    		});
