@@ -1,7 +1,7 @@
 {
-  "name": "cfwebapi",
+  "name": "Catioro Fofof WebApi",
   "version": "1.0.0",
-  "description": "cf web api",
+  "description": "API Rest do app Catioro Fofo",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
