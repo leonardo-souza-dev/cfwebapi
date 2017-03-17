@@ -30,8 +30,7 @@ app.use(bodyParser({ uploadDir: '/path/to/temporary/directory/to/store/uploaded/
     app.set('view engine', 'jade');
 
 //temp
-//var connStr = process.env.CF_MYSQL_CONNSTR;
-var connStr = 'mysql://ch4pj48srg20sqnt:mi0nrgdxn1qpv4w9@tkck4yllxdrw0bhi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/ryvfnuo9gyupf0g7';
+var connStr = process.env.CF_MYSQL_CONNSTR;
 
 var connection = mysql.createConnection(connStr);
 var mailPwd = process.env.CF_MAIL_PWD;
@@ -55,31 +54,31 @@ var sequelize = new Sequelize(connStr, {
 });
 
 var Usuario = sequelize.define('usuario', {
-    UsuarioId: {
+    usuarioId: {
         type: Sequelize.INTEGER,
-        field: 'UsuarioId',
+        field: 'usuarioId',
         allowNull: false,
         primaryKey: true,
         autoIncrement: true
     },
-    NomeArquivoAvatar: {
+    nomeArquivoAvatar: {
         type: Sequelize.STRING,
-        field: 'NomeArquivoAvatar',
+        field: 'nomeArquivoAvatar',
         allowNull: true
     },
-    Email: {
+    email: {
         type: Sequelize.STRING,
-        field: 'Email',
+        field: 'email',
         allowNull: false
     },
-    NomeUsuario: {
+    nomeUsuario: {
         type: Sequelize.STRING,
-        field: 'NomeUsuario',
+        field: 'nomeUsuario',
         allowNull: false
     },
-    Senha: {
+    senha: {
         type: Sequelize.STRING,
-        field: 'Senha',
+        field: 'senha',
         allowNull: false
     }}, { tableName: 'Usuario' }
 );
@@ -166,7 +165,7 @@ app.post('/api/uploadfoto', function (req, res) {
         }
 
         var resposta = { sucesso: true, mensagem: 'foto upload ok', nomeArquivo: req.file.filename };
-
+        console.log(resposta);
         res.json(resposta);
     });
 });
@@ -220,15 +219,25 @@ app.post('/api/descurtir', function (req, res) {
 });
 
 app.post('/api/salvarpost', function (req, res) {
+	
+	console.log('*** salvarpost ***');
+    console.log('req.body');
+    console.log(req.body);
+    console.log('');
+
+    var lPost = req.body;
 
     Post.create({
-        legenda: req.body.Legenda,
-        nomeArquivo: req.body.NomeArquivo,
-        usuarioId: req.body.UsuarioId
-    }).then(function (post) {
-
-        res.json({ postId: post.postId});
-    });
+        legenda: lPost.legenda,
+        nomeArquivo: lPost.nomeArquivo,
+        usuarioId: lPost.usuario.usuarioId
+    }).then(function (pPost) {
+        lPost.postId = pPost.postId;
+        console.log(' callback salvar post.....');
+        console.log(JSON.stringify(lPost));
+        var ret = JSON.stringify(lPost);
+        res.json({ret});
+    }); 
 });
 
 app.post('/api/downloadfoto', function (req, res) {
@@ -258,7 +267,7 @@ app.get('/api/foto', function (req, res) {
 app.get('/api/obterposts', function (req, res) {
 
     Post
-        .findAll({limit:50, include: [ Curtida, Usuario ] })
+        .findAll({limit:50, include: [ Curtida, Usuario ], where: { usuarioId: {ne: 0} } })
         .then(function (posts) {
 
         	console.log('****** posts[0]');
@@ -345,7 +354,7 @@ app.post('/api/atualizarusuario', function (req, res) {
 
 	if (pNomeUsuario != null) {
 		Usuario
-		.findOne({ where: { NomeUsuario: pNomeUsuario }})
+		.findOne({ where: { nomeUsuario: pNomeUsuario }})
 		.then(function(user) {
 
 			var nomeDeUsuarioDisponivel = user == null;
@@ -353,7 +362,7 @@ app.post('/api/atualizarusuario', function (req, res) {
 			if (nomeDeUsuarioDisponivel){
 				console.log('***** nome de usuario disponivel ');
 				Usuario
-					.findOne({ where: { Email: pEmail, UsuarioId: pUsuarioId }})
+					.findOne({ where: { email: pEmail, usuarioId: pUsuarioId }})
 					.then(function(user) {
 
 						if (user != null) {
@@ -362,11 +371,13 @@ app.post('/api/atualizarusuario', function (req, res) {
 							console.log('***** pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
 							user
 								.update({ 
-										NomeUsuario: pNomeUsuario, 
-										NomeArquivoAvatar: pNomeArquivoAvatar 
+										nomeUsuario: pNomeUsuario, 
+										nomeArquivoAvatar: pNomeArquivoAvatar 
 									})
 								.then(function(user2) {
-									console.log('***** atualizou usuario id #' + user2.UsuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+									console.log('***** user *****');
+									console.log(user);
+									console.log('***** atualizou usuario id #' + user2.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
 
 						    		res.json({ mensagem: "SUCESSO" });
 					    		});
@@ -378,7 +389,7 @@ app.post('/api/atualizarusuario', function (req, res) {
 				});
 			} else {
 				Usuario
-					.findOne({ where: { UsuarioId: pUsuarioId }})
+					.findOne({ where: { usuarioId: pUsuarioId }})
 					.then(function(user3) {
 						console.log('user3');console.log(JSON.stringify(user3));console.log('');
 
@@ -386,9 +397,9 @@ app.post('/api/atualizarusuario', function (req, res) {
 							console.log('***** nome de usuario ja é do proprio que esta editando');
 							console.log('*****     pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
 							user3
-								.update({ NomeArquivoAvatar: pNomeArquivoAvatar })
+								.update({ nomeArquivoAvatar: pNomeArquivoAvatar })
 								.then(function(user4) {
-									console.log('***** atualizou usuario id #' + user4.UsuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+									console.log('***** atualizou usuario id #' + user4.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
 
 						    		res.json({ mensagem: "SUCESSO" });
 					    		});
