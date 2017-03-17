@@ -136,6 +136,7 @@ Curtida.belongsToMany(Post, {
 	constraints: false
 });
 
+
 // routes ==================================================
 var storage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -227,7 +228,7 @@ app.post('/api/salvarpost', function (req, res) {
         usuarioId: req.body.UsuarioId
     }).then(function (post) {
 
-        res.json({ postId: post.postId});
+        res.json({ post: post });
     });
 });
 
@@ -276,12 +277,6 @@ app.post('/api/login', function (req, res) {
 	var emailDigitado = req.body.email;
 	var senhaDigitada = req.body.senha;
     
-    //var usuarioFake = { mensagem: "SUCESSO", 
-    //                    usuario:  {
-    //                          usuarioId: 16,
-    //                          senha:"qwe", email: "qwe", nomeArquivoAvatar: "av_000016_1489186903698.jpg", nomeUsuario: "patinhadog"} };
-    //console.log(usuarioFake);
-    //res.json(usuarioFake);
     Usuario
         .findAll({ where: { email: emailDigitado, senha: senhaDigitada }})
         .then(function (usuarios) {
