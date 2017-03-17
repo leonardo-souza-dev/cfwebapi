@@ -226,17 +226,19 @@ app.post('/api/salvarpost', function (req, res) {
     console.log('');
 
     var lPost = req.body;
+    var lUsuario = lPost.usuario;
 
     Post.create({
         legenda: lPost.legenda,
         nomeArquivo: lPost.nomeArquivo,
         usuarioId: lPost.usuario.usuarioId
     }).then(function (pPost) {
-        lPost.postId = pPost.postId;
         console.log(' callback salvar post.....');
-        console.log(JSON.stringify(lPost));
-        var ret = JSON.stringify(lPost);
-        res.json({ret});
+        var postSalvo = { postId: pPost.postId, legenda: lPost.legenda, nomeArquivo: lPost.nomeArquivo, curtidas: lPost.curtidas, 
+            usuario: lUsuario };
+        console.log(postSalvo);
+
+        res.json(postSalvo);
     }); 
 });
 
