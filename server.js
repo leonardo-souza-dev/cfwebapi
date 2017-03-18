@@ -11,7 +11,7 @@ var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var async = require('async');
 var Sequelize = require('sequelize');
-var Enumerable = require('linq');
+//var Enumerable = require('linq');
 var fs = require('fs');
 var url = require('url');
 var nodemailer = require('nodemailer');
@@ -33,6 +33,15 @@ app.use(bodyParser({ uploadDir: '/path/to/temporary/directory/to/store/uploaded/
 var connStr = process.env.CF_MYSQL_CONNSTR;
 
 var connection = mysql.createConnection(connStr);
+connection.connect(function(err) {
+  if (err) {
+    console.error('error connecting: ' + err.stack);
+    return;
+  }
+
+  console.log('connected as id ' + connection.threadId);
+});
+
 var mailPwd = process.env.CF_MAIL_PWD;
 var transporter = nodemailer.createTransport('smtps://catiorofofo.app%40gmail.com:' + mailPwd + '@smtp.gmail.com');
 
@@ -279,6 +288,19 @@ app.get('/api/obterposts', function (req, res) {
             res.json(posts);
         });
 });
+app.get('/api/obterusuarios', function (req, res) {
+
+    Usuario
+        .findAll()
+        .then(function (usuarios) {
+
+        	console.log('****** posts[0]');
+        	console.log(JSON.stringify(usuarios));
+        	console.log('');
+
+            res.json(usuarios);
+        });
+});
 
 app.post('/api/login', function (req, res) {
 
@@ -349,6 +371,7 @@ app.post('/api/cadastro', function (req, res) {
 
 app.post('/api/atualizarusuario', function (req, res) {
 
+    console.log('..............................');console.log('.');console.log('.');console.log('.');console.log('.');console.log('.');console.log('.');
 	var pEmail = req.body.email;
 	var pUsuarioId = req.body.usuarioId;
 	var pNomeUsuario = req.body.nomeUsuario;
@@ -356,63 +379,70 @@ app.post('/api/atualizarusuario', function (req, res) {
 
 	if (pNomeUsuario != null) {
 		Usuario
-		.findOne({ where: { nomeUsuario: pNomeUsuario }})
-		.then(function(user) {
+            .findAll({ where: { nomeUsuario: pNomeUsuario }})
+            .then(function(users) {
+                console.log('user');
+                console.log(JSON.stringify(users));
+                console.log('');
 
-			var nomeDeUsuarioDisponivel = user == null;
+                var nomeDeUsuarioDisponivel = users.length < 1 || users == null;
+                console.log('nomeDeUsuarioDisponivel');
+                console.log(nomeDeUsuarioDisponivel);
+                console.log('');
 
-			if (nomeDeUsuarioDisponivel){
-				console.log('***** nome de usuario disponivel ');
-				Usuario
-					.findOne({ where: { email: pEmail, usuarioId: pUsuarioId }})
-					.then(function(user) {
+                if (nomeDeUsuarioDisponivel) {
 
-						if (user != null) {
-							console.log('***** encontrado usuario que ta editando o perfil ');console.log(JSON.stringify(user));console.log('');
-							console.log('*****     pNomeUsuario');console.log(pNomeUsuario);console.log('');
-							console.log('***** pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
-							user
-								.update({ 
-										nomeUsuario: pNomeUsuario, 
-										nomeArquivoAvatar: pNomeArquivoAvatar 
-									})
-								.then(function(user2) {
-									console.log('***** user *****');
-									console.log(user);
-									console.log('***** atualizou usuario id #' + user2.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+                    Usuario
+                        .findOne({ where: { email: pEmail, usuarioId: pUsuarioId }})
+                        .then(function(user1) { 
+                            console.log('user1');
+                            console.log(JSON.stringify(user1));
+                            console.log('');
 
-						    		res.json({ mensagem: "SUCESSO" });
-					    		});
-						} else {
-							console.log('***** nao encontrado usuario que quer editar o perfil');
+                            if (user1 != null) {
+                                user1
+                                    .update({ nomeUsuario: pNomeUsuario, nomeArquivoAvatar: pNomeArquivoAvatar })
+                                    .then(function(user2) {
+                                        console.log('--------------------------------------------------------------');
+                                        console.log('***** atualizou usuario id #' + user2.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+                                        console.log(JSON.stringify(user2));
+                                        console.log('');
 
-							res.json({ mensagem: 'INEXISTENTE' });
-						}
-				});
-			} else {
-				Usuario
-					.findOne({ where: { usuarioId: pUsuarioId }})
-					.then(function(user3) {
-						console.log('user3');console.log(JSON.stringify(user3));console.log('');
+                                        res.json(user2);
+                                    });
+                            } else {
+                                console.log('--------------------------------------------------------------');
+                                console.log('***** nao encontrado usuario que quer editar o perfil. Email: ' + pEmail);
 
-						if (user3 != null) {
-							console.log('***** nome de usuario ja é do proprio que esta editando');
-							console.log('*****     pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
-							user3
-								.update({ nomeArquivoAvatar: pNomeArquivoAvatar })
-								.then(function(user4) {
-									console.log('***** atualizou usuario id #' + user4.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+                                res.json({ mensagem: 'INEXISTENTE' });
+                            }
+                    });
+                } else {
+                    Usuario
+                        .findAll({ where: { usuarioId: pUsuarioId }})
+                        .then(function(user3) {
+                            console.log('user3');
+                            console.log(JSON.stringify(user3));
+                            console.log('');
 
-						    		res.json({ mensagem: "SUCESSO" });
-					    		});
-						} else {
-							console.log('ERROGENERICO');
+                            if (user3 != null) { 
+                                res.json({usuarioId: "-1"});
+                                /*user3
+                                    .update({ nomeArquivoAvatar: pNomeArquivoAvatar })
+                                    .then(function(user4) {
+                                        console.log('--------------------------------------------------------------');
+                                        console.log('***** atualizou usuario id #' + user4.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
 
-							res.json({ mensagem: 'ERROGENERICO' });
-						}
-				});
-			}
-		});
+                                        res.json(user4);
+                                    });*/
+                            } else {
+                                console.log('usuario novo. possibilidade de implementar upsert');
+
+                                res.json();
+                            }
+                    });
+                }
+            });
 	}
 });
 
