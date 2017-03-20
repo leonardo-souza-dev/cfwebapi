@@ -281,9 +281,13 @@ app.get('/api/obterposts', function (req, res) {
         .findAll({limit:50, include: [ Curtida, Usuario ], where: { usuarioId: {ne: 0} } })
         .then(function (posts) {
 
-        	console.log('****** posts[0]');
-        	console.log(JSON.stringify(posts[0]));
-        	console.log('');
+
+            console.log('***************************************');
+            console.log('***     OBTENDO POSTS');
+        	console.log('***');
+        	console.log('***    ' + JSON.stringify(posts[0]));
+        	console.log('***');
+            console.log('***************************************');
 
             res.json(posts);
         });
@@ -304,36 +308,30 @@ app.get('/api/obterusuarios', function (req, res) {
 
 app.post('/api/login', function (req, res) {
 
-	console.log('*** LOGIN ***');
+	console.log('***************************************');
+	console.log('***     LOGIN DESEJADO');
+	console.log('***');
+	console.log('***     email: ' + req.body.email);
+	console.log('***     senha: ' + req.body.senha);
+	console.log('***');
 
 	var emailDigitado = req.body.email;
 	var senhaDigitada = req.body.senha;
-    
-    //var usuarioFake = { mensagem: "SUCESSO", 
-    //                    usuario:  {
-    //                          usuarioId: 16,
-    //                          senha:"qwe", email: "qwe", nomeArquivoAvatar: "av_000016_1489186903698.jpg", nomeUsuario: "patinhadog"} };
-    //console.log(usuarioFake);
-    //res.json(usuarioFake);
+
     Usuario
         .findAll({ where: { email: emailDigitado, senha: senhaDigitada }})
         .then(function (usuarios) {
 
-			console.log('** usuarios **');
-			console.log(JSON.stringify(usuarios[0]));
-			console.log('*** usuarios != null ***');
-			console.log(usuarios != null);
-			console.log('*** usuarios.length > 0 ***');
-			console.log(usuarios.length > 0);
-
         	if (usuarios != null && usuarios.length > 0){
-				console.log('*** USUARIO ENCONTRADO ***');
-	            console.log(JSON.stringify(usuarios[0]));
-	            console.log('');
+	            console.log('***');
+				console.log('***     USUARIO ENCONTRADO');
+	            console.log('***     ' + JSON.stringify(usuarios[0]));
+	            console.log('***');
+	            console.log('***************************************');
 	            res.json(usuarios[0]);
         		
         	} else if (usuarios == null || usuarios.length == 0) {
-        		console.log('*** USUARIO NAO ENCONTRADO ***');
+        		console.log('***   USUARIO NAO ENCONTRADO');
 	            res.json({ });
         	}
         });
@@ -371,66 +369,65 @@ app.post('/api/cadastro', function (req, res) {
 
 app.post('/api/atualizarusuario', function (req, res) {
 
-    console.log('..............................');console.log('.');console.log('.');console.log('.');console.log('.');console.log('.');console.log('.');
+	console.log('***************************************');
+	console.log('***     ATUALIZANDO USUARIO');
+	console.log('***');
+	console.log('***     email: ' + req.body.email);
+	console.log('***     usuarioId: ' + req.body.usuarioId);
+	console.log('***     nomeUsuario: ' + req.body.nomeUsuario);
+	console.log('***     nomeArquivoAvatar: ' + req.body.nomeArquivoAvatar);
+	console.log('***');
 	var pEmail = req.body.email;
 	var pUsuarioId = req.body.usuarioId;
 	var pNomeUsuario = req.body.nomeUsuario;
 	var pNomeArquivoAvatar = req.body.nomeArquivoAvatar;
 
-	if (pNomeUsuario != null) {
-		Usuario
-            .findAll({ where: { nomeUsuario: pNomeUsuario }})
-            .then(function(users) {
-                console.log('user');
-                console.log(JSON.stringify(users));
-                console.log('');
+    Usuario
+        .findAll({ where: { nomeUsuario: pNomeUsuario }})
+        .then(function(users) {
+ 
+            var nomeDeUsuarioDisponivel = users.length < 1 || users == null;
 
-                var nomeDeUsuarioDisponivel = users.length < 1 || users == null;
-                console.log('nomeDeUsuarioDisponivel'); 
-                console.log(nomeDeUsuarioDisponivel);
-                console.log('');
+            if (nomeDeUsuarioDisponivel) {
 
-                if (nomeDeUsuarioDisponivel) {
+                Usuario
+                    .findOne({ where: { email: pEmail, usuarioId: pUsuarioId }})
+                    .then(function(user1) { 
 
-                    Usuario
-                        .findOne({ where: { email: pEmail, usuarioId: pUsuarioId }})
-                        .then(function(user1) { 
-                            console.log('user1');
-                            console.log(JSON.stringify(user1));
-                            console.log('');
+                        if (user1 != null) {
+                            user1
+                                .update({ nomeUsuario: pNomeUsuario, nomeArquivoAvatar: pNomeArquivoAvatar })
+                                .then(function(user2) {
+                                    console.log('***');
+                                    console.log('***     atualizou usuario id #' + user2.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+                                    console.log('***');
+                                    console.log('***     ' + JSON.stringify(user2));
+                                    console.log('***');
+                                    console.log('***************************************');
 
-                            if (user1 != null) {
-                                user1
-                                    .update({ nomeUsuario: pNomeUsuario, nomeArquivoAvatar: pNomeArquivoAvatar })
-                                    .then(function(user2) {
-                                        console.log('--------------------------------------------------------------');
-                                        console.log('***** atualizou usuario id #' + user2.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
-                                        console.log(JSON.stringify(user2));
-                                        console.log('');
+                                    res.json(user2);
+                                });
+                        } else {
+                            console.log('***');
+                            console.log('***     nao encontrado usuario que quer editar o perfil. Email: ' + pEmail);
 
-                                        res.json(user2);
-                                    });
-                            } else {
-                                console.log('--------------------------------------------------------------');
-                                console.log('***** nao encontrado usuario que quer editar o perfil. Email: ' + pEmail);
-
-                                res.json({ mensagem: 'INEXISTENTE' });
-                            }
+                            res.json({ mensagem: 'INEXISTENTE' });
+                        }
+                });
+            } else {
+                Usuario
+                    .update(
+                        { nomeArquivoAvatar: pNomeArquivoAvatar, nomeUsuario: pNomeUsuario },
+                        { where: { usuarioId: pUsuarioId }})
+                    .then(function(user3) {
+                        console.log('***');
+                        console.log('***     atualizou usuario id #' + pUsuarioId + ' com o nome de usuario: ' + pNomeUsuario + ' e nomeArquivoAvatar: ' + pNomeArquivoAvatar );
+                        console.log('***');
+                        console.log('***************************************');
+                        res.json(user3);
                     });
-                } else {
-                    Usuario
-                        .update(
-                            { nomeArquivoAvatar: pNomeArquivoAvatar, nomeUsuario: pNomeUsuario },
-                            { where: { usuarioId: pUsuarioId }})
-                        .then(function(user3) {
-                            console.log('--------------------------------------------------------------');
-                            console.log('***** atualizou usuario id #' + user3.usuarioId + ' com o nome de usuario: ' + pNomeUsuario + ' e nomeArquivoAvatar: ' + pNomeArquivoAvatar );
-
-                            res.json(user3);
-                        });
-                }
-            });
-	}
+            }
+        });
 });
 
 app.post('/api/esquecisenha', function (req, res) {
@@ -467,6 +464,9 @@ app.get('/imagens', function(req, res){
     var todasImagens = [];
 
     const testFolder = __dirname + '/uploads/';
+    console.log('testFolder');
+    console.log(testFolder);
+    console.log('');
     const fs = require('fs');
     fs.readdir(testFolder, (err, files) => {
 
