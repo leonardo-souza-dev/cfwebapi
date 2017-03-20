@@ -386,7 +386,7 @@ app.post('/api/atualizarusuario', function (req, res) {
                 console.log('');
 
                 var nomeDeUsuarioDisponivel = users.length < 1 || users == null;
-                console.log('nomeDeUsuarioDisponivel');
+                console.log('nomeDeUsuarioDisponivel'); 
                 console.log(nomeDeUsuarioDisponivel);
                 console.log('');
 
