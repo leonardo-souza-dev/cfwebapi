@@ -419,28 +419,15 @@ app.post('/api/atualizarusuario', function (req, res) {
                     });
                 } else {
                     Usuario
-                        .findAll({ where: { usuarioId: pUsuarioId }})
+                        .update(
+                            { nomeArquivoAvatar: pNomeArquivoAvatar, nomeUsuario: pNomeUsuario },
+                            { where: { usuarioId: pUsuarioId }})
                         .then(function(user3) {
-                            console.log('user3');
-                            console.log(JSON.stringify(user3));
-                            console.log('');
+                            console.log('--------------------------------------------------------------');
+                            console.log('***** atualizou usuario id #' + user3.usuarioId + ' com o nome de usuario: ' + pNomeUsuario + ' e nomeArquivoAvatar: ' + pNomeArquivoAvatar );
 
-                            if (user3 != null) { 
-                                res.json({usuarioId: "-1"});
-                                /*user3
-                                    .update({ nomeArquivoAvatar: pNomeArquivoAvatar })
-                                    .then(function(user4) {
-                                        console.log('--------------------------------------------------------------');
-                                        console.log('***** atualizou usuario id #' + user4.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
-
-                                        res.json(user4);
-                                    });*/
-                            } else {
-                                console.log('usuario novo. possibilidade de implementar upsert');
-
-                                res.json();
-                            }
-                    });
+                            res.json(user3);
+                        });
                 }
             });
 	}
