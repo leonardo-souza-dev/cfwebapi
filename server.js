@@ -283,10 +283,10 @@ app.post('/api/login', function (req, res) {
 
 			console.log('** usuarios **');
 			console.log(JSON.stringify(usuarios[0]));
-			console.log('*** usuarios != null ***');
-			console.log(usuarios != null);
-			console.log('*** usuarios.length > 0 ***');
-			console.log(usuarios.length > 0);
+			//console.log('*** usuarios != null ***');
+			//console.log(usuarios != null);
+			//console.log('*** usuarios.length > 0 ***');
+			//console.log(usuarios.length > 0);
 
         	if (usuarios != null && usuarios.length > 0){
 				console.log('*** USUARIO ENCONTRADO ***');
@@ -296,7 +296,7 @@ app.post('/api/login', function (req, res) {
         		
         	} else if (usuarios == null || usuarios.length == 0) {
         		console.log('*** USUARIO NAO ENCONTRADO ***');
-	            res.json({ });
+                res.json({});
         	}
         });
 });
@@ -489,9 +489,9 @@ app.get('/api/deletarImagem', function(req, res){
     });
 })
 
-app.get('/fetch', function (req, res) {
+app.get('/api/fetch', function (req, res) {
 
-    res.send({ foo: 'ok'});
+    res.send({ status: 'ok'});
 });
 
 // listen ======================================
