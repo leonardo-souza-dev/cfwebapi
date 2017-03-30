@@ -1,5 +1,5 @@
 {
-  "name": "Catioro Fofof WebApi",
+  "name": "cfwebapi",
   "version": "1.0.0",
   "description": "API Rest do app Catioro Fofo",
   "main": "server.js",
@@ -18,6 +18,5 @@
     "sequelize": "^3.24.4",
     "jade": "~1.11.0"
   },
-  "author": "",
   "license": "ISC"
 }

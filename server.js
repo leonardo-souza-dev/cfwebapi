@@ -11,7 +11,7 @@ var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var async = require('async');
 var Sequelize = require('sequelize');
-var Enumerable = require('linq');
+//var Enumerable = require('linq');
 var fs = require('fs');
 var url = require('url');
 var nodemailer = require('nodemailer');
@@ -30,10 +30,18 @@ app.use(bodyParser({ uploadDir: '/path/to/temporary/directory/to/store/uploaded/
     app.set('view engine', 'jade');
 
 //temp
-//var connStr = process.env.CF_MYSQL_CONNSTR;
-var connStr = 'mysql://ch4pj48srg20sqnt:mi0nrgdxn1qpv4w9@tkck4yllxdrw0bhi.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/ryvfnuo9gyupf0g7';
+var connStr = process.env.CF_MYSQL_CONNSTR;
 
 var connection = mysql.createConnection(connStr);
+connection.connect(function(err) {
+  if (err) {
+    console.error('error connecting: ' + err.stack);
+    return;
+  }
+
+  console.log('connected as id ' + connection.threadId);
+});
+
 var mailPwd = process.env.CF_MAIL_PWD;
 var transporter = nodemailer.createTransport('smtps://catiorofofo.app%40gmail.com:' + mailPwd + '@smtp.gmail.com');
 
@@ -55,31 +63,31 @@ var sequelize = new Sequelize(connStr, {
 });
 
 var Usuario = sequelize.define('usuario', {
-    UsuarioId: {
+    usuarioId: {
         type: Sequelize.INTEGER,
-        field: 'UsuarioId',
+        field: 'usuarioId',
         allowNull: false,
         primaryKey: true,
         autoIncrement: true
     },
-    NomeArquivoAvatar: {
+    nomeArquivoAvatar: {
         type: Sequelize.STRING,
-        field: 'NomeArquivoAvatar',
+        field: 'nomeArquivoAvatar',
         allowNull: true
     },
-    Email: {
+    email: {
         type: Sequelize.STRING,
-        field: 'Email',
+        field: 'email',
         allowNull: false
     },
-    NomeUsuario: {
+    nomeUsuario: {
         type: Sequelize.STRING,
-        field: 'NomeUsuario',
+        field: 'nomeUsuario',
         allowNull: false
     },
-    Senha: {
+    senha: {
         type: Sequelize.STRING,
-        field: 'Senha',
+        field: 'senha',
         allowNull: false
     }}, { tableName: 'Usuario' }
 );
@@ -167,7 +175,7 @@ app.post('/api/uploadfoto', function (req, res) {
         }
 
         var resposta = { sucesso: true, mensagem: 'foto upload ok', nomeArquivo: req.file.filename };
-
+        console.log(resposta);
         res.json(resposta);
     });
 });
@@ -221,15 +229,27 @@ app.post('/api/descurtir', function (req, res) {
 });
 
 app.post('/api/salvarpost', function (req, res) {
+	
+	console.log('*** salvarpost ***');
+    console.log('req.body');
+    console.log(req.body);
+    console.log('');
+
+    var lPost = req.body;
+    var lUsuario = lPost.usuario;
 
     Post.create({
-        legenda: req.body.Legenda,
-        nomeArquivo: req.body.NomeArquivo,
-        usuarioId: req.body.UsuarioId
-    }).then(function (post) {
+        legenda: lPost.legenda,
+        nomeArquivo: lPost.nomeArquivo,
+        usuarioId: lPost.usuario.usuarioId
+    }).then(function (pPost) {
+        console.log(' callback salvar post.....');
+        var postSalvo = { postId: pPost.postId, legenda: lPost.legenda, nomeArquivo: lPost.nomeArquivo, curtidas: lPost.curtidas, 
+            usuario: lUsuario };
+        console.log(postSalvo);
 
-        res.json({ post: post });
-    });
+        res.json(postSalvo);
+    }); 
 });
 
 app.post('/api/downloadfoto', function (req, res) {
@@ -259,44 +279,66 @@ app.get('/api/foto', function (req, res) {
 app.get('/api/obterposts', function (req, res) {
 
     Post
-        .findAll({limit:50, include: [ Curtida, Usuario ] })
+        .findAll({limit:50, include: [ Curtida, Usuario ], where: { usuarioId: {ne: 0} } })
         .then(function (posts) {
 
-        	console.log('****** posts[0]');
-        	console.log(JSON.stringify(posts[0]));
-        	console.log('');
+
+            console.log('***************************************');
+            console.log('***     OBTENDO POSTS');
+        	console.log('***');
+        	console.log('***    ' + JSON.stringify(posts[0]));
+        	console.log('***');
+            console.log('***************************************');
 
             res.json(posts);
+        });
+});
+app.get('/api/obterusuarios', function (req, res) {
+
+    Usuario
+        .findAll()
+        .then(function (usuarios) {
+
+        	console.log('****** posts[0]');
+        	console.log(JSON.stringify(usuarios));
+        	console.log('');
+
+            res.json(usuarios);
         });
 });
 
 app.post('/api/login', function (req, res) {
 
-	console.log('*** LOGIN ***');
+	console.log('***************************************');
+	console.log('***     LOGIN DESEJADO');
+	console.log('***');
+	console.log('***     email: ' + req.body.email);
+	console.log('***     senha: ' + req.body.senha);
+	console.log('***');
 
 	var emailDigitado = req.body.email;
 	var senhaDigitada = req.body.senha;
-    
+
     Usuario
         .findAll({ where: { email: emailDigitado, senha: senhaDigitada }})
         .then(function (usuarios) {
 
-			console.log('** usuarios **');
-			console.log(JSON.stringify(usuarios[0]));
-			//console.log('*** usuarios != null ***');
-			//console.log(usuarios != null);
-			//console.log('*** usuarios.length > 0 ***');
-			//console.log(usuarios.length > 0);
 
         	if (usuarios != null && usuarios.length > 0){
-				console.log('*** USUARIO ENCONTRADO ***');
-	            console.log(JSON.stringify(usuarios[0]));
-	            console.log('');
+	            console.log('***');
+				console.log('***     USUARIO ENCONTRADO');
+	            console.log('***     ' + JSON.stringify(usuarios[0]));
+	            console.log('***');
+	            console.log('***************************************');
 	            res.json(usuarios[0]);
         		
         	} else if (usuarios == null || usuarios.length == 0) {
-        		console.log('*** USUARIO NAO ENCONTRADO ***');
-                res.json({});
+
+
+
+        		console.log('***   USUARIO NAO ENCONTRADO');
+	            res.json({ });
+
         	}
         });
 });
@@ -333,69 +375,65 @@ app.post('/api/cadastro', function (req, res) {
 
 app.post('/api/atualizarusuario', function (req, res) {
 
+	console.log('***************************************');
+	console.log('***     ATUALIZANDO USUARIO');
+	console.log('***');
+	console.log('***     email: ' + req.body.email);
+	console.log('***     usuarioId: ' + req.body.usuarioId);
+	console.log('***     nomeUsuario: ' + req.body.nomeUsuario);
+	console.log('***     nomeArquivoAvatar: ' + req.body.nomeArquivoAvatar);
+	console.log('***');
 	var pEmail = req.body.email;
 	var pUsuarioId = req.body.usuarioId;
 	var pNomeUsuario = req.body.nomeUsuario;
 	var pNomeArquivoAvatar = req.body.nomeArquivoAvatar;
 
-	if (pNomeUsuario != null) {
-		Usuario
-		.findOne({ where: { NomeUsuario: pNomeUsuario }})
-		.then(function(user) {
+    Usuario
+        .findAll({ where: { nomeUsuario: pNomeUsuario }})
+        .then(function(users) {
+ 
+            var nomeDeUsuarioDisponivel = users.length < 1 || users == null;
 
-			var nomeDeUsuarioDisponivel = user == null;
+            if (nomeDeUsuarioDisponivel) {
 
-			if (nomeDeUsuarioDisponivel){
-				console.log('***** nome de usuario disponivel ');
-				Usuario
-					.findOne({ where: { Email: pEmail, UsuarioId: pUsuarioId }})
-					.then(function(user) {
+                Usuario
+                    .findOne({ where: { email: pEmail, usuarioId: pUsuarioId }})
+                    .then(function(user1) { 
 
-						if (user != null) {
-							console.log('***** encontrado usuario que ta editando o perfil ');console.log(JSON.stringify(user));console.log('');
-							console.log('*****     pNomeUsuario');console.log(pNomeUsuario);console.log('');
-							console.log('***** pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
-							user
-								.update({ 
-										NomeUsuario: pNomeUsuario, 
-										NomeArquivoAvatar: pNomeArquivoAvatar 
-									})
-								.then(function(user2) {
-									console.log('***** atualizou usuario id #' + user2.UsuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+                        if (user1 != null) {
+                            user1
+                                .update({ nomeUsuario: pNomeUsuario, nomeArquivoAvatar: pNomeArquivoAvatar })
+                                .then(function(user2) {
+                                    console.log('***');
+                                    console.log('***     atualizou usuario id #' + user2.usuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
+                                    console.log('***');
+                                    console.log('***     ' + JSON.stringify(user2));
+                                    console.log('***');
+                                    console.log('***************************************');
 
-						    		res.json({ mensagem: "SUCESSO" });
-					    		});
-						} else {
-							console.log('***** nao encontrado usuario que quer editar o perfil');
+                                    res.json(user2);
+                                });
+                        } else {
+                            console.log('***');
+                            console.log('***     nao encontrado usuario que quer editar o perfil. Email: ' + pEmail);
 
-							res.json({ mensagem: 'INEXISTENTE' });
-						}
-				});
-			} else {
-				Usuario
-					.findOne({ where: { UsuarioId: pUsuarioId }})
-					.then(function(user3) {
-						console.log('user3');console.log(JSON.stringify(user3));console.log('');
-
-						if (user3 != null) {
-							console.log('***** nome de usuario ja é do proprio que esta editando');
-							console.log('*****     pNomeArquivoAvatar ');console.log(pNomeArquivoAvatar);console.log('');
-							user3
-								.update({ NomeArquivoAvatar: pNomeArquivoAvatar })
-								.then(function(user4) {
-									console.log('***** atualizou usuario id #' + user4.UsuarioId + ' com o nome de usuario novo: ' + pNomeUsuario);
-
-						    		res.json({ mensagem: "SUCESSO" });
-					    		});
-						} else {
-							console.log('ERROGENERICO');
-
-							res.json({ mensagem: 'ERROGENERICO' });
-						}
-				});
-			}
-		});
-	}
+                            res.json({ mensagem: 'INEXISTENTE' });
+                        }
+                });
+            } else {
+                Usuario
+                    .update(
+                        { nomeArquivoAvatar: pNomeArquivoAvatar, nomeUsuario: pNomeUsuario },
+                        { where: { usuarioId: pUsuarioId }})
+                    .then(function(user3) {
+                        console.log('***');
+                        console.log('***     atualizou usuario id #' + pUsuarioId + ' com o nome de usuario: ' + pNomeUsuario + ' e nomeArquivoAvatar: ' + pNomeArquivoAvatar );
+                        console.log('***');
+                        console.log('***************************************');
+                        res.json(user3);
+                    });
+            }
+        });
 });
 
 app.post('/api/esquecisenha', function (req, res) {
@@ -432,6 +470,9 @@ app.get('/imagens', function(req, res){
     var todasImagens = [];
 
     const testFolder = __dirname + '/uploads/';
+    console.log('testFolder');
+    console.log(testFolder);
+    console.log('');
     const fs = require('fs');
     fs.readdir(testFolder, (err, files) => {
 
